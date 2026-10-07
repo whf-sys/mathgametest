@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乘法大挑戰 - 三關遊戲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', '微軟正黑體', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .level-indicator {
+            text-align: center;
+            font-size: 1.5em;
+            color: #764ba2;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .question-box {
+            background: #f8f9fa;
+            border: 3px solid #667eea;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"], input[type="text"] {
+            padding: 15px 20px;
+            font-size: 1.3em;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.3em;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 1.5em;
+            margin-top: 20px;
+            min-height: 40px;
+            font-weight: bold;
+        }
+
+        .correct {
+            color: #28a745;
+        }
+
+        .incorrect {
+            color: #dc3545;
+        }
+
+        .progress {
+            text-align: center;
+            font-size: 1.2em;
+            color: #666;
+            margin-top: 20px;
+        }
+
+        .multiplication-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .table-item {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .start-screen, .end-screen {
+            text-align: center;
+        }
+
+        .start-screen h2, .end-screen h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+
+        .start-screen p, .end-screen p {
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .final-score {
+            font-size: 3em;
+            color: #764ba2;
+            font-weight: bold;
+            margin: 30px 0;
+        }
+
+        .instruction {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .instruction h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .instruction ul {
+            margin-left: 20px;
+            color: #856404;
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🎮 乘法大挑戰</h1>
+        
+        <!-- 開始畫面 -->
+        <div id="startScreen" class="start-screen">
+            <h2>歡迎來到乘法大挑戰！</h2>
+            <div class="instruction">
+                <h3>遊戲說明：</h3>
+                <ul>
+                    <li><strong>第 1 關：</strong>從 2-9 中隨機抽取一個數字，寫出該數字的完整乘法表（1-10）</li>
+                    <li><strong>第 2 關：</strong>回答 5 道填充題，例如「3 × ? = 15」，填入正確數字</li>
+                    <li><strong>第 3 關：</strong>看到答案（例如 15），寫出能得出該答案的乘法組合（例如 3×5）</li>
+                </ul>
+            </div>
+            <p>準備好測試你的乘法能力了嗎？</p>
+            <button onclick="startGame()">開始遊戲</button>
+        </div>
+
+        <!-- 遊戲畫面 -->
+        <div id="gameScreen" class="hidden">
+            <div class="level-indicator" id="levelIndicator">第 1 關</div>
+            
+            <div class="question-box">
+                <div class="question-text" id="questionText"></div>
+                <div id="inputArea" class="input-area"></div>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+            <div class="progress" id="progress"></div>
+        </div>
+
+        <!-- 結束畫面 -->
+        <div id="endScreen" class="end-screen hidden">
+            <h2>🎉 恭喜完成所有關卡！</h2>
+            <p>你的總得分是：</p>
+            <div class="final-score" id="finalScore">0</div>
+            <p id="finalMessage"></p>
+            <button onclick="restartGame()">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 遊戲狀態
+        let currentLevel = 1;
+        let currentQuestion = 0;
+        let score = 0;
+        let levelData = {};
+        const QUESTIONS_PER_LEVEL = 5;
+
+        // 隨機整數生成器 (min 到 max，包含兩端)
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // 開始遊戲
+        function startGame() {
+            currentLevel = 1;
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            loadLevel();
+        }
+
+        // 載入關卡
+        function loadLevel() {
+            currentQuestion = 0;
+            document.getElementById('levelIndicator').textContent = `第 ${currentLevel} 關`;
+            
+            if (currentLevel === 1) {
+                // 第 1 關：生成 2-9 的隨機數字
+                levelData.number = getRandomInt(2, 9);
+                showLevel1Question();
+            } else if (currentLevel === 2) {
+                // 第 2 關：準備 5 道填充題
+                levelData.questions = generateLevel2Questions();
+                showLevel2Question();
+            } else if (currentLevel === 3) {
+                // 第 3 關：準備 5 道答案題
+                levelData.questions = generateLevel3Questions();
+                showLevel3Question();
+            }
+        }
+
+        // 第 1 關：顯示題目（寫出乘法表）
+        function showLevel1Question() {
+            const num = levelData.number;
+            document.getElementById('questionText').textContent = 
+                `請寫出 ${num} 的完整乘法表（1 到 10）：`;
+            
+            let inputHTML = '<div class="multiplication-table">';
+            for (let i = 1; i <= 10; i++) {
+                inputHTML += `
+                    <div class="table-item">
+                        ${num} × ${i} = <input type="number" data-index="${i}" style="width:80px;margin-left:5px;">
+                    </div>
+                `;
+            }
+            inputHTML += '</div>';
+            inputHTML += '<div style="margin-top:20px;"><button onclick="checkLevel1Answer()">提交答案</button></div>';
+            
+            document.getElementById('inputArea').innerHTML = inputHTML;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('progress').textContent = '共 10 題';
+        }
+
+        // 第 1 關：檢查答案
+        function checkLevel1Answer() {
+            const num = levelData.number;
+            const inputs = document.querySelectorAll('.multiplication-table input');
+            let correct = 0;
+            let allCorrect = true;
+
+            inputs.forEach(input => {
+                const index = parseInt(input.getAttribute('data-index'));
+                const userAnswer = parseInt(input.value);
+                const correctAnswer = num * index;
+
+                if (userAnswer === correctAnswer) {
+                    correct++;
+                    input.style.background = '#d4edda';
+                    input.style.borderColor = '#28a745';
+                } else {
+                    allCorrect = false;
+                    input.style.background = '#f8d7da';
+                    input.style.borderColor = '#dc3545';
+                }
+            });
+
+            const feedback = document.getElementById('feedback');
+            if (allCorrect) {
+                feedback.textContent = '✓ 太棒了！全部正確！';
+                feedback.className = 'feedback correct';
+                score += 10;
+                setTimeout(() => {
+                    currentLevel = 2;
+                    loadLevel();
+                }, 2000);
+            } else {
+                feedback.textContent = `✗ 答對了 ${correct}/10 題，請修正錯誤的答案！`;
+                feedback.className = 'feedback incorrect';
+            }
+        }
+
+        // 第 2 關：生成 5 道填充題
+        function generateLevel2Questions() {
+            const questions = [];
+            for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
+                const factor1 = getRandomInt(2, 9);
+                const factor2 = getRandomInt(1, 10);
+                const product = factor1 * factor2;
+                // 隨機決定哪個因數是未知數
+                const unknownPosition = Math.random() < 0.5 ? 1 : 2;
+                questions.push({
+                    factor1,
+                    factor2,
+                    product,
+                    unknownPosition
+                });
+            }
+            return questions;
+        }
+
+        // 第 2 關：顯示題目
+        function showLevel2Question() {
+            const q = levelData.questions[currentQuestion];
+            let questionText;
+            
+            if (q.unknownPosition === 1) {
+                questionText = `? × ${q.factor2} = ${q.product}`;
+            } else {
+                questionText = `${q.factor1} × ? = ${q.product}`;
+            }
+
+            document.getElementById('questionText').textContent = questionText;
+            document.getElementById('inputArea').innerHTML = `
+                <input type="number" id="level2Input" placeholder="輸入答案">
+                <button onclick="checkLevel2Answer()">提交</button>
+            `;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('progress').textContent = `第 ${currentQuestion + 1}/${QUESTIONS_PER_LEVEL} 題`;
+            document.getElementById('level2Input').focus();
+        }
+
+        // 第 2 關：檢查答案
+        function checkLevel2Answer() {
+            const q = levelData.questions[currentQuestion];
+            const userAnswer = parseInt(document.getElementById('level2Input').value);
+            const correctAnswer = q.unknownPosition === 1 ? q.product / q.factor2 : q.product / q.factor1;
+
+            const feedback = document.getElementById('feedback');
+            if (userAnswer === correctAnswer) {
+                feedback.textContent = '✓ 正確！';
+                feedback.className = 'feedback correct';
+                score += 2;
+                currentQuestion++;
+                if (currentQuestion >= QUESTIONS_PER_LEVEL) {
+                    setTimeout(() => {
+                        currentLevel = 3;
+                        loadLevel();
+                    }, 1500);
+                } else {
+                    setTimeout(showLevel2Question, 1500);
+                }
+            } else {
+                feedback.textContent = `✗ 錯誤！正確答案是 ${correctAnswer}`;
+                feedback.className = 'feedback incorrect';
+                currentQuestion++;
+                if (currentQuestion >= QUESTIONS_PER_LEVEL) {
+                    setTimeout(() => {
+                        currentLevel = 3;
+                        loadLevel();
+                    }, 2000);
+                } else {
+                    setTimeout(showLevel2Question, 2000);
+                }
+            }
+        }
+
+        // 第 3 關：生成 5 道答案題
+        function generateLevel3Questions() {
+            const questions = [];
+            for (let i = 0; i < QUESTIONS_PER_LEVEL; i++) {
+                const factor1 = getRandomInt(2, 9);
+                const factor2 = getRandomInt(1, 10);
+                const product = factor1 * factor2;
+                questions.push({
+                    factor1,
+                    factor2,
+                    product
+                });
+            }
+            return questions;
+        }
+
+        // 第 3 關：顯示題目
+        function showLevel3Question() {
+            const q = levelData.questions[currentQuestion];
+            document.getElementById('questionText').textContent = 
+                `什麼乘法組合等於 ${q.product}？（格式：因數×因數，例如 3×5）`;
+            
+            document.getElementById('inputArea').innerHTML = `
+                <input type="text" id="level3Input" placeholder="例如：3×5 或 3*5">
+                <button onclick="checkLevel3Answer()">提交</button>
+            `;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('progress').textContent = `第 ${currentQuestion + 1}/${QUESTIONS_PER_LEVEL} 題`;
+            document.getElementById('level3Input').focus();
+        }
+
+        // 第 3 關：檢查答案
+        function checkLevel3Answer() {
+            const q = levelData.questions[currentQuestion];
+            let userInput = document.getElementById('level3Input').value.trim();
+            
+            // 支援多種格式：3×5, 3*5, 3 x 5, 5×3, 5*3, 5 x 3
+            userInput = userInput.replace(/\s+/g, '').toLowerCase();
+            userInput = userInput.replace(/[×x*]/g, '*');
+            
+            const parts = userInput.split('*');
+            
+            const feedback = document.getElementById('feedback');
+            
+            if (parts.length === 2) {
+                const num1 = parseInt(parts[0]);
+                const num2 = parseInt(parts[1]);
+                
+                if ((num1 === q.factor1 && num2 === q.factor2) || 
+                    (num1 === q.factor2 && num2 === q.factor1)) {
+                    feedback.textContent = '✓ 正確！';
+                    feedback.className = 'feedback correct';
+                    score += 2;
+                    currentQuestion++;
+                    if (currentQuestion >= QUESTIONS_PER_LEVEL) {
+                        setTimeout(endGame, 1500);
+                    } else {
+                        setTimeout(showLevel3Question, 1500);
+                    }
+                } else {
+                    feedback.textContent = `✗ 錯誤！正確答案是 ${q.factor1}×${q.factor2} 或 ${q.factor2}×${q.factor1}`;
+                    feedback.className = 'feedback incorrect';
+                    currentQuestion++;
+                    if (currentQuestion >= QUESTIONS_PER_LEVEL) {
+                        setTimeout(endGame, 2000);
+                    } else {
+                        setTimeout(showLevel3Question, 2000);
+                    }
+                }
+            } else {
+                feedback.textContent = '✗ 格式錯誤！請使用「因數×因數」格式（例如 3×5）';
+                feedback.className = 'feedback incorrect';
+            }
+        }
+
+        // 結束遊戲
+        function endGame() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = score;
+            
+            let message = '';
+            if (score >= 20) {
+                message = '🏆 太厲害了！你是乘法大師！';
+            } else if (score >= 15) {
+                message = '👍 做得很好！繼續加油！';
+            } else if (score >= 10) {
+                message = '😊 不錯喔！再多練習會更好！';
+            } else {
+                message = '💪 別氣餒！多加練習一定能進步！';
+            }
+            document.getElementById('finalMessage').textContent = message;
+        }
+
+        // 重新開始遊戲
+        function restartGame() {
+            startGame();
+        }
+
+        // 支援 Enter 鍵提交
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (currentLevel === 2 && !document.getElementById('level2Input').disabled) {
+                    checkLevel2Answer();
+                } else if (currentLevel === 3 && !document.getElementById('level3Input').disabled) {
+                    checkLevel3Answer();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
