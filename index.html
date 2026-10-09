@@ -1,505 +1,562 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>9x9 乘法表大冒險 🎮</title>
+  <title>🌟 乘法大冒險！九九乘數趣味挑戰賽</title>
   <style>
     :root {
-      --bg-color: #FFFBF0;
-      --primary: #FF7675;
-      --secondary: #74B9FF;
-      --accent: #55E6C1;
-      --yellow: #FDCB6E;
-      --dark: #2D3436;
+      --primary: #FF6B6B;
+      --secondary: #4ECDC4;
+      --accent: #FFE66D;
+      --purple: #6C5CE7;
+      --bg: #F7F9FC;
+      --text: #2D3436;
+      --card-bg: #FFFFFF;
+      --shadow: 0 10px 25px rgba(0,0,0,0.08);
+      --border-radius: 24px;
     }
 
     * {
       box-sizing: border-box;
-      font-family: 'Fredoka', 'Chalkboard SE', 'Comic Sans MS', sans-serif, system-ui;
+      margin: 0;
+      padding: 0;
+      font-family: 'PingFang SC', 'Microsoft JhengHei', system-ui, -apple-system, sans-serif;
     }
 
     body {
-      background-color: var(--bg-color);
-      color: var(--dark);
-      margin: 0;
-      padding: 20px;
+      background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      padding: 20px;
+      color: var(--text);
     }
 
-    .container {
-      background: white;
+    .game-container {
+      background: var(--card-bg);
       width: 100%;
-      max-width: 650px;
-      padding: 30px;
-      border-radius: 24px;
-      box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-      border: 4px solid var(--dark);
-      text-align: center;
+      max-width: 680px;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 35px 30px;
       position: relative;
+      overflow: hidden;
+      border: 4px solid #FFF;
     }
 
-    h1 {
+    /* 頂部常駐面板 */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 3px dashed #E2E8F0;
+    }
+
+    .badge {
+      background: var(--purple);
+      color: white;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .timer-display {
+      font-size: 22px;
+      font-weight: bold;
       color: var(--primary);
-      font-size: 2.2rem;
-      margin-top: 0;
-      text-shadow: 2px 2px 0 var(--yellow);
+      background: #FFF0F0;
+      padding: 6px 16px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
+    /* 通用按鈕 */
     .btn {
       background: var(--primary);
       color: white;
-      border: 3px solid var(--dark);
-      padding: 12px 28px;
-      font-size: 1.2rem;
+      border: none;
+      padding: 14px 36px;
+      font-size: 20px;
       font-weight: bold;
       border-radius: 50px;
       cursor: pointer;
-      box-shadow: 0 5px 0 var(--dark);
-      transition: all 0.1s ease;
+      box-shadow: 0 6px 0 #D63031;
+      transition: all 0.15s ease;
+      display: inline-block;
       margin-top: 15px;
     }
 
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 7px 0 var(--dark);
+      box-shadow: 0 8px 0 #D63031;
     }
 
     .btn:active {
-      transform: translateY(3px);
-      box-shadow: 0 2px 0 var(--dark);
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #D63031;
     }
 
+    .btn-secondary {
+      background: var(--secondary);
+      box-shadow: 0 6px 0 #00A896;
+    }
+    .btn-secondary:hover {
+      box-shadow: 0 8px 0 #00A896;
+    }
+    .btn-secondary:active {
+      box-shadow: 0 2px 0 #00A896;
+    }
+
+    /* 視圖控制 */
     .screen {
       display: none;
+      animation: fadeIn 0.3s ease;
     }
-
     .screen.active {
       display: block;
     }
 
-    /* ⏱ 計時器 */
-    .timer-bar {
-      display: none;
-      width: fit-content;
-      margin: 0 auto 18px;
-      padding: 7px 20px;
-      font-size: 1.15rem;
-      font-weight: bold;
-      letter-spacing: 1px;
-      color: #0984E3;
-      background: #E1F5FE;
-      border: 2px solid #0984E3;
-      border-radius: 50px;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 遊戲首頁風格 */
-    .rules-card {
-      background: #E1F5FE;
-      border: 2px dashed #0288D1;
-      border-radius: 16px;
-      padding: 15px;
-      text-align: left;
-      margin: 20px 0;
-      line-height: 1.6;
-    }
-
-    /* 題目與輸入框樣式 */
-    .question-box {
-      font-size: 2.2rem;
-      font-weight: bold;
-      margin: 20px 0;
-      background: #FFF9C4;
-      padding: 20px;
-      border-radius: 16px;
-      border: 3px solid var(--dark);
-      display: inline-block;
-      min-width: 250px;
-    }
-
-    input[type="number"], input[type="text"] {
-      font-size: 1.5rem;
-      padding: 8px 12px;
-      width: 100px;
+    /* 首頁規則卡片 */
+    .hero-title {
+      font-size: 32px;
       text-align: center;
-      border: 3px solid var(--dark);
-      border-radius: 12px;
-      outline: none;
+      color: var(--purple);
+      margin-bottom: 20px;
     }
 
-    .level-1-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin: 20px 0;
+    .rule-card {
+      background: #F8F9FA;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 25px;
+      border-left: 6px solid var(--secondary);
     }
 
-    .level-1-item {
-      background: #F1F2F6;
-      padding: 10px;
-      border-radius: 12px;
-      border: 2px solid var(--dark);
-      font-size: 1.2rem;
-    }
-
-    .progress-bar {
-      font-weight: bold;
-      color: #0984E3;
+    .rule-item {
+      font-size: 16px;
+      line-height: 1.8;
       margin-bottom: 10px;
     }
 
-    /* 🏆 通關時間 */
-    .time-result {
-      display: inline-block;
-      margin: 12px 0 4px;
-      padding: 12px 26px;
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #0984E3;
-      background: #FFF9C4;
-      border: 3px solid var(--dark);
-      border-radius: 16px;
-    }
-
-    /* 重置彈窗 (Modal) */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    .modal {
-      background: white;
-      padding: 25px;
-      border-radius: 20px;
-      border: 4px solid var(--dark);
+    /* 關卡輸入與題目 */
+    .question-title {
+      font-size: 24px;
       text-align: center;
-      max-width: 350px;
+      margin-bottom: 20px;
+      color: #2D3436;
     }
 
-    .modal-btns {
+    .level1-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .grid-item {
+      background: #F1F2F6;
+      padding: 12px;
+      border-radius: 14px;
       display: flex;
-      justify-content: space-around;
-      margin-top: 20px;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
     }
 
-    .btn-secondary {
-      background: #B2BEC3;
+    .input-box {
+      width: 65px;
+      height: 45px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      border: 2px solid #CBD5E0;
+      border-radius: 10px;
+      margin-left: 8px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .input-box:focus {
+      border-color: var(--purple);
+      background: #FAF5FF;
+    }
+
+    .q-card {
+      background: #F7FAFC;
+      border-radius: 18px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      border: 2px solid #EDF2F7;
+    }
+
+    .feedback-msg {
+      text-align: center;
+      font-size: 16px;
+      min-height: 24px;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    .msg-error { color: #E53E3E; }
+    .msg-success { color: #38A169; }
+
+    /* 結果結算頁 */
+    .result-box {
+      text-align: center;
+      padding: 20px 0;
+    }
+    .result-time {
+      font-size: 42px;
+      font-weight: 900;
+      color: var(--primary);
+      margin: 20px 0;
+    }
+    .stars {
+      font-size: 40px;
+      margin-bottom: 15px;
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-
-    <!-- ⏱ 遊戲進行中的計時器（首頁/結算頁隱藏） -->
-    <div class="timer-bar" id="timer-bar">⏱ 用時：<span id="timer-display">00:00</span></div>
-
-    <!-- 🏠 畫面 0: 遊戲首頁 -->
-    <div id="start-screen" class="screen active">
-      <h1>乘法表大冒險 🚀</h1>
-      <p>準備好考考你的 9x9 乘法實力了嗎？</p>
-
-      <div class="rules-card">
-        <h3>📜 遊戲規則：</h3>
-        <ul>
-          <li><strong>第 1 關：</strong> 抽一個數字，寫出該數字完整的 1-9 乘數表！</li>
-          <li><strong>第 2 關：</strong> 填空大挑戰（共 5 題），找出隱藏的乘數！</li>
-          <li><strong>第 3 關：</strong> 逆向組合題（共 5 題），根據答案反推乘法組合！</li>
-          <li><strong>⏱ 計時：</strong> 從按下開始那一刻計時，全部完成後公佈總時間！</li>
-        </ul>
+  <div class="game-container">
+    <!-- 常駐計時條 (遊戲進行時顯示) -->
+    <div class="top-bar" id="topBar" style="display: none;">
+      <span class="badge" id="levelBadge">第 1 關</span>
+      <div class="timer-display">
+        ⏱️ <span id="timeCounter">00:00.0</span>
       </div>
-
-      <button class="btn" onclick="startGame()">開始遊戲 ▶</button>
     </div>
 
-    <!-- 🎯 畫面 1: 第 1 關 -->
-    <div id="level-1" class="screen">
-      <h2>第 1 關：挑戰 <span id="l1-target" style="color:var(--primary)"></span> 的乘數表</h2>
-      <p>請填寫完所有答案：</p>
-      <div class="level-1-grid" id="l1-inputs"></div>
-      <button class="btn" onclick="checkLevel1()">提交答案 答案✓</button>
+    <!-- 首頁 / 規則頁 -->
+    <div class="screen active" id="screenHome">
+      <h1 class="hero-title">🚀 九九乘數大冒險</h1>
+      <div class="rule-card">
+        <div class="rule-item">🎯 <strong>關卡 1：</strong> 隨機抽出一個數字，迅速完成整套乘數表！</div>
+        <div class="rule-item">🔍 <strong>關卡 2：</strong> 找出隱藏乘數，共 5 題（例如：3 × ? = 15）。</div>
+        <div class="rule-item">🧩 <strong>關卡 3：</strong> 破解乘積密碼，共 5 題（例如：給出 15，答出 3 × 5）。</div>
+        <div class="rule-item">⚡ <strong>規則保證：</strong> 後兩關題目絕不重複，考驗你的敏捷反應！</div>
+        <div class="rule-item">🛡️ <strong>貼心防護：</strong> 遊戲中誤觸重整將會有提示視窗保護進度。</div>
+      </div>
+      <div style="text-align: center;">
+        <button class="btn" onclick="startGame()">開始挑戰 🎮</button>
+      </div>
     </div>
 
-    <!-- 🎯 畫面 2: 第 2 關 -->
-    <div id="level-2" class="screen">
-      <div class="progress-bar">第 2 關 - 進度：<span id="l2-count">1</span>/5 題</div>
-      <div class="question-box">
-        <span id="l2-q">3 x ? = 15</span>
+    <!-- 第 1 關 -->
+    <div class="screen" id="screenL1">
+      <h2 class="question-title" id="l1Title">第 1 關：寫出所有乘數表</h2>
+      <div class="level1-grid" id="l1Container"></div>
+      <div class="feedback-msg" id="l1Msg"></div>
+      <div style="text-align: center;">
+        <button class="btn btn-secondary" onclick="checkLevel1()">提交答案 ✅</button>
       </div>
-      <div>
-        答：? = <input type="number" id="l2-answer" autofocus>
-      </div>
-      <button class="btn" onclick="checkLevel2()">下一題 ➔</button>
     </div>
 
-    <!-- 🎯 畫面 3: 第 3 關 -->
-    <div id="level-3" class="screen">
-      <div class="progress-bar">第 3 關 - 進度：<span id="l3-count">1</span>/5 題</div>
-      <p>請問什麼組合等於這個數字？（提示：例 3x5）</p>
-      <div class="question-box">
-        <span id="l3-target">15</span>
+    <!-- 第 2 關 -->
+    <div class="screen" id="screenL2">
+      <h2 class="question-title">第 2 關：尋找失蹤乘數 (<span id="l2Progress">1</span>/5)</h2>
+      <div class="q-card" id="l2QuestionBox"></div>
+      <div class="feedback-msg" id="l2Msg"></div>
+      <div style="text-align: center;">
+        <button class="btn btn-secondary" onclick="checkLevel2()">下一題 ➔</button>
       </div>
-      <div>
-        <input type="number" id="l3-num1" style="width:70px;"> x
-        <input type="number" id="l3-num2" style="width:70px;">
-      </div>
-      <button class="btn" onclick="checkLevel3()">提交答案 ➔</button>
     </div>
 
-    <!-- 🏆 畫面 4: 通關結算 -->
-    <div id="end-screen" class="screen">
-      <h1>🎉 太棒了！完美通關！</h1>
-      <p>你已經成功征服了 9x9 乘法表大冒險！</p>
-      <div class="time-result">⏱ 你的總時間：<span id="final-time">00:00</span></div>
-      <br>
-      <button class="btn" onclick="resetGame(true)">再玩一次 🔄</button>
+    <!-- 第 3 關 -->
+    <div class="screen" id="screenL3">
+      <h2 class="question-title">第 3 關：數字密碼大解鎖 (<span id="l3Progress">1</span>/5)</h2>
+      <div class="q-card" id="l3QuestionBox"></div>
+      <div class="feedback-msg" id="l3Msg"></div>
+      <div style="text-align: center;">
+        <button class="btn btn-secondary" onclick="checkLevel3()">確認組合 ➔</button>
+      </div>
     </div>
 
-  </div>
-
-  <!-- 🚨 自訂重新載入確認彈窗 -->
-  <div class="modal-overlay" id="custom-modal">
-    <div class="modal">
-      <h3>⚠️ 確定要重新重玩嗎？</h3>
-      <p>重新載入頁面將會清除你目前的遊戲進度！</p>
-      <div class="modal-btns">
-        <button class="btn btn-secondary" onclick="closeModal()">繼續遊戲</button>
-        <button class="btn" onclick="confirmReload()">確定重寫</button>
+    <!-- 結算頁面 -->
+    <div class="screen" id="screenResult">
+      <div class="result-box">
+        <div class="stars">🏆 🌟 🎉</div>
+        <h2 style="font-size: 28px; color: var(--purple);">恭喜通關！乘法大師！</h2>
+        <p style="margin-top: 10px; color: #718096;">你的總通關成績：</p>
+        <div class="result-time" id="finalTime">00:00.0</div>
+        <button class="btn" onclick="resetToHome()">再玩一次 🔄</button>
       </div>
     </div>
   </div>
 
   <script>
-    let isGameActive = false; // 記錄遊戲是否正在進行中
-    let l1Number = 2;
+    // 遊戲狀態全域變數
+    let isPlaying = false;
+    let timerInterval = null;
+    let startTime = null;
+
+    let l1Target = 2;
     let l2Questions = [];
     let l2Index = 0;
     let l3Questions = [];
     let l3Index = 0;
 
-    // ⏱ 計時器狀態
-    let timerStart = 0;
-    let timerInterval = null;
-    let elapsedSeconds = 0;
-
-    // ---------------------- 🛡️ 防誤觸重新載入 (F5/Reflash) 邏輯 ----------------------
+    // 攔截重新整理與關閉頁面 (防止誤觸 F5/Refresh)
     window.addEventListener('beforeunload', function (e) {
-      if (isGameActive) {
+      if (isPlaying) {
         e.preventDefault();
-        e.returnValue = '';
+        e.returnValue = '遊戲仍在進行中，確認要重新載入並放棄當前進度嗎？';
+        return e.returnValue;
       }
     });
 
-    function showReloadModal() {
-      document.getElementById('custom-modal').style.display = 'flex';
-    }
-
-    function closeModal() {
-      document.getElementById('custom-modal').style.display = 'none';
-    }
-
-    function confirmReload() {
-      isGameActive = false;
-      location.reload();
-    }
-
-    // ---------------------- ⏱ 計時器邏輯 ----------------------
-    function formatTime(totalSeconds) {
-      const m = Math.floor(totalSeconds / 60);
-      const s = totalSeconds % 60;
-      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-    }
-
+    // 計時器邏輯
     function startTimer() {
-      stopTimer();
-      elapsedSeconds = 0;
-      timerStart = Date.now();
-      document.getElementById('timer-display').innerText = '00:00';
-      document.getElementById('timer-bar').style.display = 'block';
+      startTime = Date.now();
       timerInterval = setInterval(() => {
-        elapsedSeconds = Math.floor((Date.now() - timerStart) / 1000);
-        document.getElementById('timer-display').innerText = formatTime(elapsedSeconds);
-      }, 250);
+        const diff = Date.now() - startTime;
+        const totalSeconds = Math.floor(diff / 1000);
+        const ms = Math.floor((diff % 1000) / 100);
+        const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+        const secs = String(totalSeconds % 60).padStart(2, '0');
+        document.getElementById('timeCounter').textContent = `${mins}:${secs}.${ms}`;
+      }, 100);
     }
 
     function stopTimer() {
-      if (timerInterval !== null) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-        elapsedSeconds = Math.floor((Date.now() - timerStart) / 1000);
-        document.getElementById('timer-display').innerText = formatTime(elapsedSeconds);
-      }
+      clearInterval(timerInterval);
+      const diff = Date.now() - startTime;
+      const totalSeconds = Math.floor(diff / 1000);
+      const ms = Math.floor((diff % 1000) / 100);
+      const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+      const secs = String(totalSeconds % 60).padStart(2, '0');
+      return `${mins}分 ${secs}.${ms}秒`;
     }
 
-    function resetTimer() {
-      stopTimer();
-      timerStart = 0;
-      elapsedSeconds = 0;
-      document.getElementById('timer-display').innerText = '00:00';
-      document.getElementById('timer-bar').style.display = 'none';
-    }
-
-    // ---------------------- 🎮 遊戲核心邏輯 ----------------------
-    function showScreen(id) {
+    // 切換畫面工具函式
+    function showScreen(screenId) {
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
+      document.getElementById(screenId).classList.add('active');
     }
 
+    // 開始遊戲
     function startGame() {
-      isGameActive = true;
-      startTimer();      // 開始計時
-      startLevel1();
+      isPlaying = true;
+      document.getElementById('topBar').style.display = 'flex';
+      startTimer();
+      generateAllQuestions();
+      setupLevel1();
     }
 
-    // --- 第 1 關 ---
-    function startLevel1() {
-      l1Number = Math.floor(Math.random() * 8) + 2; // 2 - 9 隨機抽數
-      document.getElementById('l1-target').innerText = l1Number;
+    // 預先生成題目並確保第 2、3 關絕不重複
+    function generateAllQuestions() {
+      // 第 1 關抽數字 (2 - 9)
+      l1Target = Math.floor(Math.random() * 8) + 2;
 
-      const container = document.getElementById('l1-inputs');
+      // 生成所有可能的九九乘法組合 (2~9)
+      const allPairs = [];
+      for (let a = 2; a <= 9; a++) {
+        for (let b = 2; b <= 9; b++) {
+          allPairs.push({ a, b, product: a * b });
+        }
+      }
+      // 洗牌
+      allPairs.sort(() => Math.random() - 0.5);
+
+      // 第 2 關抽 5 題
+      l2Questions = [];
+      const usedProducts = new Set();
+      
+      for (let i = 0; l2Questions.length < 5 && i < allPairs.length; i++) {
+        const pair = allPairs[i];
+        if (!usedProducts.has(pair.product)) {
+          usedProducts.add(pair.product);
+          // 隨機缺項在乘數或被乘數
+          const missingFirst = Math.random() > 0.5;
+          l2Questions.push({
+            numA: pair.a,
+            numB: pair.b,
+            product: pair.product,
+            missingFirst: missingFirst,
+            answer: missingFirst ? pair.a : pair.b
+          });
+        }
+      }
+
+      // 第 3 關抽 5 個不同的積，且絕不與第 2 關出現過的乘積重複
+      l3Questions = [];
+      for (let i = 0; l3Questions.length < 5 && i < allPairs.length; i++) {
+        const pair = allPairs[i];
+        if (!usedProducts.has(pair.product)) {
+          usedProducts.add(pair.product);
+          l3Questions.push(pair.product);
+        }
+      }
+
+      l2Index = 0;
+      l3Index = 0;
+    }
+
+    // 關卡 1 初始化與檢查
+    function setupLevel1() {
+      document.getElementById('levelBadge').textContent = '第 1 關';
+      document.getElementById('l1Title').textContent = `第 1 關：請寫出【${l1Target}】的所有乘數表`;
+      const container = document.getElementById('l1Container');
       container.innerHTML = '';
+      document.getElementById('l1Msg').textContent = '';
 
       for (let i = 1; i <= 9; i++) {
-        container.innerHTML += `
-          <div class="level-1-item">
-            ${l1Number} x ${i} =
-            <input type="number" class="l1-ans" data-multiplier="${i}">
-          </div>
-        `;
+        const item = document.createElement('div');
+        item.className = 'grid-item';
+        item.innerHTML = `${l1Target} × ${i} = <input type="number" class="input-box l1-input" data-ans="${l1Target * i}">`;
+        container.appendChild(item);
       }
-      showScreen('level-1');
+      showScreen('screenL1');
     }
 
     function checkLevel1() {
-      const inputs = document.querySelectorAll('.l1-ans');
+      const inputs = document.querySelectorAll('.l1-input');
       let allCorrect = true;
 
       inputs.forEach(input => {
-        const mult = parseInt(input.getAttribute('data-multiplier'));
-        const val = parseInt(input.value);
-        if (val !== l1Number * mult) {
+        const userVal = parseInt(input.value.trim(), 10);
+        const correctVal = parseInt(input.dataset.ans, 10);
+        if (userVal !== correctVal) {
           allCorrect = false;
+          input.style.borderColor = '#E53E3E';
+        } else {
+          input.style.borderColor = '#38A169';
         }
       });
 
+      const msg = document.getElementById('l1Msg');
       if (allCorrect) {
-        alert('🎉 恭喜通過第 1 關！進入第 2 關！');
-        startLevel2();
+        msg.className = 'feedback-msg msg-success';
+        msg.textContent = '🌟 太厲害了！全部正確，即將進入第 2 關...';
+        setTimeout(() => {
+          setupLevel2();
+        }, 1200);
       } else {
-        alert('❌ 有答案算錯囉，再檢查看看！');
+        msg.className = 'feedback-msg msg-error';
+        msg.textContent = '有部分答案不正確或未填寫，再檢查一下喔！';
       }
     }
 
-    // --- 第 2 關 ---
-    function startLevel2() {
-      l2Questions = [];
-      l2Index = 0;
-
-      // ✅ 用 Set 記錄已出過的題目，確保 5 題都不重複
-      const usedKeys = new Set();
-      while (l2Questions.length < 5) {
-        const a = Math.floor(Math.random() * 9) + 1;
-        const b = Math.floor(Math.random() * 9) + 1;
-        const key = a + 'x' + b;   // a x ? = a*b 可唯一識別題目
-        if (usedKeys.has(key)) continue;
-        usedKeys.add(key);
-        l2Questions.push({ a: a, b: b, ans: b, total: a * b });
-      }
-
-      loadLevel2Question();
-      showScreen('level-2');
+    // 關卡 2 初始化與檢查
+    function setupLevel2() {
+      document.getElementById('levelBadge').textContent = '第 2 關';
+      showScreen('screenL2');
+      renderLevel2Question();
     }
 
-    function loadLevel2Question() {
-      let q = l2Questions[l2Index];
-      document.getElementById('l2-count').innerText = l2Index + 1;
-      document.getElementById('l2-q').innerText = `${q.a} x ? = ${q.total}`;
-      document.getElementById('l2-answer').value = '';
-      document.getElementById('l2-answer').focus();
+    function renderLevel2Question() {
+      const q = l2Questions[l2Index];
+      document.getElementById('l2Progress').textContent = l2Index + 1;
+      document.getElementById('l2Msg').textContent = '';
+      
+      const box = document.getElementById('l2QuestionBox');
+      if (q.missingFirst) {
+        box.innerHTML = `<input type="number" id="l2Input" class="input-box" autofocus> × ${q.numB} = ${q.product}`;
+      } else {
+        box.innerHTML = `${q.numA} × <input type="number" id="l2Input" class="input-box" autofocus> = ${q.product}`;
+      }
     }
 
     function checkLevel2() {
-      let userAns = parseInt(document.getElementById('l2-answer').value);
-      if (userAns === l2Questions[l2Index].ans) {
+      const input = document.getElementById('l2Input');
+      const userVal = parseInt(input.value.trim(), 10);
+      const q = l2Questions[l2Index];
+      const msg = document.getElementById('l2Msg');
+
+      if (userVal === q.answer) {
         l2Index++;
-        if (l2Index < 5) {
-          loadLevel2Question();
+        if (l2Index < l2Questions.length) {
+          renderLevel2Question();
         } else {
-          alert('🎉 答對 5 題！恭喜通過第 2 關！進入最後關卡！');
-          startLevel3();
+          msg.className = 'feedback-msg msg-success';
+          msg.textContent = '🎉 第 2 關全數過關！前進最終關卡...';
+          setTimeout(() => {
+            setupLevel3();
+          }, 1200);
         }
       } else {
-        alert('❌ 答錯了，再試一次！');
+        msg.className = 'feedback-msg msg-error';
+        msg.textContent = '答案不對喔，再想想看！';
+        input.focus();
       }
     }
 
-    // --- 第 3 關 ---
-    function startLevel3() {
-      l3Questions = [];
-      l3Index = 0;
-
-      // ✅ 用 Set 記錄已出過的「目標數字」，確保 5 題都不重複
-      const usedTargets = new Set();
-      while (l3Questions.length < 5) {
-        const a = Math.floor(Math.random() * 9) + 1;
-        const b = Math.floor(Math.random() * 9) + 1;
-        const target = a * b;
-        if (usedTargets.has(target)) continue;
-        usedTargets.add(target);
-        l3Questions.push({ target: target });
-      }
-
-      loadLevel3Question();
-      showScreen('level-3');
+    // 關卡 3 初始化與檢查
+    function setupLevel3() {
+      document.getElementById('levelBadge').textContent = '第 3 關';
+      showScreen('screenL3');
+      renderLevel3Question();
     }
 
-    function loadLevel3Question() {
-      let q = l3Questions[l3Index];
-      document.getElementById('l3-count').innerText = l3Index + 1;
-      document.getElementById('l3-target').innerText = q.target;
-      document.getElementById('l3-num1').value = '';
-      document.getElementById('l3-num2').value = '';
-      document.getElementById('l3-num1').focus();
+    function renderLevel3Question() {
+      const targetProduct = l3Questions[l3Index];
+      document.getElementById('l3Progress').textContent = l3Index + 1;
+      document.getElementById('l3Msg').textContent = '';
+      
+      const box = document.getElementById('l3QuestionBox');
+      box.innerHTML = `
+        <span style="color: var(--purple); margin-right: 15px;">目標積數：${targetProduct}</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <input type="number" id="l3FactorA" class="input-box" min="1" max="9">
+          <span>×</span>
+          <input type="number" id="l3FactorB" class="input-box" min="1" max="9">
+        </div>
+      `;
     }
 
     function checkLevel3() {
-      let n1 = parseInt(document.getElementById('l3-num1').value);
-      let n2 = parseInt(document.getElementById('l3-num2').value);
-      let target = l3Questions[l3Index].target;
+      const fa = parseInt(document.getElementById('l3FactorA').value.trim(), 10);
+      const fb = parseInt(document.getElementById('l3FactorB').value.trim(), 10);
+      const targetProduct = l3Questions[l3Index];
+      const msg = document.getElementById('l3Msg');
 
-      // 檢查是否都在 1-9 之間且乘積相等
-      if (n1 >= 1 && n1 <= 9 && n2 >= 1 && n2 <= 9 && (n1 * n2 === target)) {
+      // 檢查是否為 1~9 的乘數且相乘等於目標
+      if (fa >= 1 && fa <= 9 && fb >= 1 && fb <= 9 && (fa * fb === targetProduct)) {
         l3Index++;
-        if (l3Index < 5) {
-          loadLevel3Question();
+        if (l3Index < l3Questions.length) {
+          renderLevel3Question();
         } else {
-          // 🏁 全部完成：停止計時、公佈總時間
-          isGameActive = false;   // 通關後解除防刷新提示
-          stopTimer();
-          document.getElementById('final-time').innerText = formatTime(elapsedSeconds);
-          document.getElementById('timer-bar').style.display = 'none';
-          showScreen('end-screen');
+          finishGame();
         }
       } else {
-        alert('❌ 組合不正確或數字超過 1-9 範圍，請重新思考！');
+        msg.className = 'feedback-msg msg-error';
+        msg.textContent = '組合不正確或數字超出 1~9 範圍，請重新調整！';
       }
     }
 
-    function resetGame(force) {
-      isGameActive = false;
-      resetTimer();
-      showScreen('start-screen');
+    // 完成遊戲結算
+    function finishGame() {
+      isPlaying = false; // 解除防離開限制
+      const finalTimeString = stopTimer();
+      document.getElementById('topBar').style.display = 'none';
+      document.getElementById('finalTime').textContent = finalTimeString;
+      showScreen('screenResult');
+    }
+
+    // 重設回首頁
+    function resetToHome() {
+      showScreen('screenHome');
+      document.getElementById('topBar').style.display = 'none';
+      document.getElementById('timeCounter').textContent = '00:00.0';
     }
   </script>
 </body>
